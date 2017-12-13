@@ -19,7 +19,7 @@ public class Build {
 	private List<String> jars;
 
 	@Override
-	public String toString() {
+	public String toString() { 
 		return "Build [path=" + path + ", buildPath=" + buildPath
 				+ ", targetPath=" + targetPath + ", projectName=" + projectName
 				+ ", number=" + number + ", svnPath=" + svnPath
