@@ -109,41 +109,4 @@ public class BuildUtils {
 			classPathFile.delete();
 		}
 	}
-
-	public static void main(String[] args) throws IOException {
-		List<String> ignoreds = Arrays.asList(".*/resources/.*");
-		List<String> jars = Arrays.asList("bxloan-commons-0.0.1-SNAPSHOT.jar",
-				"bxloan-dao-0.0.1-SNAPSHOT.jar",
-				"bxloan-service-0.0.1-SNAPSHOT.jar");
-
-		Build build = new Build("bxloan-r1.5.259.2", "bxloan-web",
-				"D:\\workspace_bx_test\\bxloan-r1.5.259.2\\bxloan-web\\target",
-				"bxloan-web-0.0.1-SNAPSHOT", "01",
-				"https://172.16.49.100:8443/svn/jk/weidai/branches/", "54680",
-				"bxloan", ignoreds, jars);
-		List<String> list = getDiffFileList(build);
-
-		/*
-		 * String classPath =
-		 * "D:\\workspace_bx_test\\bxloan-r1.5.259.2\\bxloan-web\\target\\bxloan-web-0.0.1-SNAPSHOT"
-		 * ; String classPathTmp =
-		 * "D:\\workspace_bx_test\\bxloan-r1.5.259.2\\bxloan-web\\target\\bxloan-web-0.0.1-SNAPSHOT\\tmp"
-		 * ;
-		 */
-		System.out.println(build.getTargetPath());
-		System.out.println(build.getRealTargetPath());
-
-		File classPathFile = new File(build.getTargetPath() + File.separator
-				+ build.getProjectName());
-		File classPathFileTmp = new File(build.getRealTargetPath());
-		try {
-			FileUtils.copyDirectory(classPathFile, classPathFileTmp);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		removeFileExDiff(classPathFileTmp, list);
-
-		String archive = CompressUtils.archive(build.getRealTargetPath());// 生成tar包
-		String path = CompressUtils.compressArchive(archive);// 生成gz包
-	}
 }

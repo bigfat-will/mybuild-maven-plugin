@@ -25,7 +25,6 @@ public class SvnUtils {
 	
 	public static List<String> getInfo(String path) {
 		try {
-			//svn info D:\workspace_bx_test\bxloan-r1.5.259.2\bxloan-web
 			StringBuffer sb = new StringBuffer(SVN_INFO);
 			String exe = sb.append(path).toString();
 			System.out.println(exe);
@@ -43,7 +42,6 @@ public class SvnUtils {
 
 	public static List<String> getDiff(String path, String num) {
 		try {
-			//svn diff -r54657:head D:\workspace_bx_test\bxloan-r1.5.259.2\bxloan-web --summarize
 			StringBuffer sb = new StringBuffer(SVN_DIFF);
 			String exe = sb.append("-r").append(num).append(":head ")
 					.append(path).append(" --summarize").toString();
@@ -59,12 +57,5 @@ public class SvnUtils {
 		}
 
 		return null;
-	}
-
-	public static void main(String[] args) {
-		String path = "G:\\eclipse\\workspace_plugs\\easyloan_r.1.0.0\\easyloan-web";
-//		getInfo(path);
-		getDiff(path, "3");
-//		getLastChangedRev(path);
 	}
 }

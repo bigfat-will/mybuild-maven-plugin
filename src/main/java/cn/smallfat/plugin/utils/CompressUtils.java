@@ -182,10 +182,6 @@ public class CompressUtils {
     	
         String entry = "C:\\Users\\yutao\\Desktop\\pageage\\test";//需要压缩的文件夹
         entry = "D:\\workspace_bx_test\\bxloan-r1.5.259.2\\bxloan-web\\target\\bxloan-web-0.0.1-SNAPSHOT_tmp";
-/*        File file = new File(entry);
-        for (File f : file.listFiles()){
-        	System.out.println(f.getName());
-        }*/
         String archive = archive(entry);//生成tar包
         String path = compressArchive(archive);//生成gz包
         System.out.println(path);
