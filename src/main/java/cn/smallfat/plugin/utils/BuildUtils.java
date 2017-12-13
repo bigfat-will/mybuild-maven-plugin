@@ -1,10 +1,13 @@
 package cn.smallfat.plugin.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import org.apache.commons.io.FileUtils;
 
 import cn.smallfat.plugin.mybuild.Build;
 
@@ -12,19 +15,45 @@ public class BuildUtils {
 	private static final String SRC = "src";
 	private static final String MAIN = "main";
 	private static final String JAVA = "java";
+	private static final String _JAVA = ".java";
 	private static final String WEBAPP = "webapp";
 	private static final String WEB_INF = "WEB-INF";
 	private static final String JAVA_CLASS = "classes";
+	private static final String _JAVA_CLASS = ".classes";
 	private static final String JAVA_LIB = "lib";
-	
-	public static List<String> getDiffFileList(Build build){
-        List<String> diffs = SvnUtils.getDiff(build.getRealSvnPath(), build.getStartRevision());
-        List<String> newDiffs = new ArrayList<String>();
-		for(String line : diffs){
+
+	public static void building(Build build) {
+
+		try {
+			List<String> list = getDiffFileList(build);
+			File classPathFile = new File(build.getTargetPath() + File.separator
+					+ build.getProjectName());
+			File classPathFileTmp = new File(build.getRealTargetPath());
+			FileUtils.copyDirectory(classPathFile, classPathFileTmp);
+			removeFileExDiff(classPathFileTmp, list);
+			String archive = CompressUtils.archive(build.getRealTargetPath());// 生成tar包
+			String path = CompressUtils.compressArchive(archive);// 生成gz包
+			File file = new File(path);
+			path = path.replace(file.getName(), build.getRealTragzName());
+			file.renameTo(new File(path));
+			System.out.println("------------------------------------------------------------------------");
+			System.out.println("MyBuild build ：   "+ path);
+			System.out.println("------------------------------------------------------------------------");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public static List<String> getDiffFileList(Build build) {
+		List<String> diffs = SvnUtils.getDiff(build.getRealSvnPath(),
+				build.getStartRevision());
+		List<String> newDiffs = new ArrayList<String>();
+		for (String line : diffs) {
 			/*
 			 * 过滤 忽略的文件
 			 */
-			if(Pattern.matches(build.getIgnored(), line)){
+			if (Pattern.matches(build.getRealIgnored(), line)) {
 				continue;
 			}
 			line = line.replace("\\", "/").replace("/", File.separator);
@@ -32,40 +61,43 @@ public class BuildUtils {
 			sb.append(File.separator).append(SRC).append(File.separator)
 					.append(MAIN).append(File.separator);
 			int index = line.indexOf(sb.toString());
-			line = line.substring(index).replace(sb.toString(), "");
-			line = line.replaceFirst(WEBAPP+"\\\\", "");
-			line = line.replaceFirst(JAVA, WEB_INF+"\\\\"+JAVA_CLASS);
-			
-			newDiffs.add(line);
+			line = line.substring(index);
+			line = line.replace(sb.toString() + WEBAPP + File.separator, "");
+			line = line.replace(sb.toString() + JAVA, WEB_INF + File.separator
+					+ JAVA_CLASS);
+			line = line.replace(_JAVA, "");
+
+			newDiffs.add(build.getRealTargetPath() + File.separator + line);
 		}
-		
-		for(String jar : build.getJars()){
-			newDiffs.add(WEB_INF+"\\"+JAVA_LIB+"\\"+jar);
+
+		for (String jar : build.getJars()) {
+			newDiffs.add(build.getRealTargetPath() + File.separator + WEB_INF
+					+ File.separator + JAVA_LIB + File.separator + jar);
 		}
-		
-		for(String line : newDiffs){
-			System.out.println(line);
+		System.out.println("------------------------------------------------------------------------");
+		for (String line : newDiffs) {
+			System.out.println("MyBuild build ：   "+ line);
 		}
-		
+		System.out.println("MyBuild build ：   处理文件数量   "+ newDiffs.size());
+		System.out.println("------------------------------------------------------------------------");
 		return newDiffs;
 	}
-	
-	public static void removeFileEXDiff(File classPathFile,List<String> diffList){
+
+	public static void removeFileExDiff(File classPathFile,
+			List<String> diffList) {
 		File[] files = classPathFile.listFiles();
-		for(File file : files){
-			if(file.isDirectory()){
-				removeFileEXDiff(file,diffList);
-			}else{
+		for (File file : files) {
+			if (file.isDirectory()) {
+				removeFileExDiff(file, diffList);
+			} else {
 				String path = file.getAbsolutePath();
-				if(path.endsWith(".class")){
-					path = path.substring(0,path.length()-6);
-					if(file.getName().contains("$")){
-						path = path.substring(0,path.lastIndexOf("$"));
+				if (path.endsWith(_JAVA_CLASS)) {
+					path = path.replace(_JAVA_CLASS, "");
+					if (file.getName().contains("$")) {
+						path = path.substring(0, path.lastIndexOf("$"));
 					}
 				}
-				if(exist(path,diffList)){
-					System.out.println(path);
-				}else{
+				if (!diffList.contains(path)) {
 					file.delete();
 				}
 			}
@@ -73,33 +105,45 @@ public class BuildUtils {
 		/*
 		 * 如果为空 则删除
 		 */
-		if(classPathFile.list().length==0){
+		if (classPathFile.list().length == 0) {
 			classPathFile.delete();
 		}
 	}
-	public static boolean exist(String path,List<String> retainList ){
-		
-		for(String t:retainList){
-			String classPath = "G:\\eclipse\\workspace_plugs\\easyloan_r.1.0.0\\easyloan-web\\target\\easyloan_tmp";
-			t = classPath +"\\"+ t;
-			if(t.startsWith(path)){
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	public static void main(String[] args) {
-		
-		String classPath = "G:\\eclipse\\workspace_plugs\\easyloan_r.1.0.0\\easyloan-web\\target\\easyloan_tmp";
-		
-		List<String> ignoreds = Arrays.asList(".*/resources/.*");
-		List<String> jars = Arrays.asList("easyloan-service-app-0.0.1-SNAPSHOT.jar","easyloan-service-0.0.1-SNAPSHOT.jar","easyloan-dao-0.0.1-SNAPSHOT.jar","easyloan-commons-0.0.1-SNAPSHOT.jar");
 
-		 Build build = new Build("easyloan_r.1.0.0", "easyloan-web", "G:\\eclipse\\workspace_plugs\\easyloan_r.1.0.0\\easyloan-web\\target"
-				 ,1,"svn://gitee.com/willluan/easyloan/","3",ignoreds,jars,null);
+	public static void main(String[] args) throws IOException {
+		List<String> ignoreds = Arrays.asList(".*/resources/.*");
+		List<String> jars = Arrays.asList("bxloan-commons-0.0.1-SNAPSHOT.jar",
+				"bxloan-dao-0.0.1-SNAPSHOT.jar",
+				"bxloan-service-0.0.1-SNAPSHOT.jar");
+
+		Build build = new Build("bxloan-r1.5.259.2", "bxloan-web",
+				"D:\\workspace_bx_test\\bxloan-r1.5.259.2\\bxloan-web\\target",
+				"bxloan-web-0.0.1-SNAPSHOT", "01",
+				"https://172.16.49.100:8443/svn/jk/weidai/branches/", "54680",
+				"bxloan", ignoreds, jars);
 		List<String> list = getDiffFileList(build);
-		File classPathFile = new File(classPath);
-		removeFileEXDiff(classPathFile, list);
+
+		/*
+		 * String classPath =
+		 * "D:\\workspace_bx_test\\bxloan-r1.5.259.2\\bxloan-web\\target\\bxloan-web-0.0.1-SNAPSHOT"
+		 * ; String classPathTmp =
+		 * "D:\\workspace_bx_test\\bxloan-r1.5.259.2\\bxloan-web\\target\\bxloan-web-0.0.1-SNAPSHOT\\tmp"
+		 * ;
+		 */
+		System.out.println(build.getTargetPath());
+		System.out.println(build.getRealTargetPath());
+
+		File classPathFile = new File(build.getTargetPath() + File.separator
+				+ build.getProjectName());
+		File classPathFileTmp = new File(build.getRealTargetPath());
+		try {
+			FileUtils.copyDirectory(classPathFile, classPathFileTmp);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		removeFileExDiff(classPathFileTmp, list);
+
+		String archive = CompressUtils.archive(build.getRealTargetPath());// 生成tar包
+		String path = CompressUtils.compressArchive(archive);// 生成gz包
 	}
 }

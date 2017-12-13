@@ -47,12 +47,12 @@ public class SvnUtils {
 			StringBuffer sb = new StringBuffer(SVN_DIFF);
 			String exe = sb.append("-r").append(num).append(":head ")
 					.append(path).append(" --summarize").toString();
-			System.out.println(exe);
+			System.out.println("------------------------------------------------------------------------");
+			System.out.println("MyBuild build ：SVN 执行命令    "+exe);
 			Process pro = Runtime.getRuntime().exec(exe);
 			List<String> list = IOUtils.readLines(pro.getInputStream(), "GBK");
-			for (String str : list) {
-				System.out.println(str);
-			}
+			System.out.println("MyBuild build ：共获取差异文件   "+list.size());
+			System.out.println("------------------------------------------------------------------------");
 			return list;
 		} catch (IOException e) {
 			e.printStackTrace();
