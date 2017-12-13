@@ -18,8 +18,10 @@ public class BuildUtils {
 	private static final String WEBAPP = "webapp";
 	private static final String WEB_INF = "WEB-INF";
 	private static final String JAVA_CLASS = "classes";
-	private static final String _JAVA_CLASS = ".classes";
+	private static final String _JAVA_CLASS = ".class";
 	private static final String JAVA_LIB = "lib";
+	private static final String RESOURCES = "resources";
+	
 
 	public static void building(Build build) {
 
@@ -63,6 +65,8 @@ public class BuildUtils {
 			line = line.substring(index);
 			line = line.replace(sb.toString() + WEBAPP + File.separator, "");
 			line = line.replace(sb.toString() + JAVA, WEB_INF + File.separator
+					+ JAVA_CLASS);
+			line = line.replace(sb.toString() + RESOURCES, WEB_INF + File.separator
 					+ JAVA_CLASS);
 			line = line.replace(_JAVA, "");
 
