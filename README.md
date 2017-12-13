@@ -4,7 +4,7 @@ my  mybuild-maven-plugin
 使用方法：
 在 pom.xml 中 添加一下内容
 
-
+---
 	<build>
 		<plugins>
 			<!-- My Build -->
@@ -37,3 +37,4 @@ my  mybuild-maven-plugin
             </plugin>
 		</plugins>
 	</build>
+---
