@@ -9,7 +9,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-import cn.smallfat.plugin.utils.SvnUtils;
+import cn.smallfat.plugin.utils.BuildUtils;
 
 @Mojo(name = "build")
 public class BuildMojo extends AbstractMojo {
@@ -21,11 +21,15 @@ public class BuildMojo extends AbstractMojo {
 	@Parameter
 	private String targetPath;
 	@Parameter
+	private String projectName;
+	@Parameter
 	private String svnPath;
-	@Parameter(defaultValue="1")
-	private Integer number;
+	@Parameter(defaultValue="01")
+	private String number;
 	@Parameter
 	private String startRevision;
+	@Parameter
+	private String targzName;
 	@Parameter
 	private List<String> ignoreds;
 	@Parameter
@@ -33,33 +37,25 @@ public class BuildMojo extends AbstractMojo {
 	
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-//    	Map<String,Object> pluginContext = getPluginContext();
-    	
-//    	for(String key : pluginContext.keySet()){
-//    		System.out.println(key);
-//    		System.out.println(pluginContext.get(key));
-//    	}
-/*    	System.out.println("project");
-    	MavenProject mavenProject =  (MavenProject) pluginContext.get("project");
-    	System.out.println(mavenProject.getFile().getPath());*/
        /*
         * 过滤  不需要 build 的项目 
         */
     	if(path.lastIndexOf(buildPath)<0)
     		return;
-    	
-    	System.out.println(path);
-    	path = path.replace(File.separatorChar+buildPath, "");
-    	path = path.substring(path.lastIndexOf(File.separatorChar)+1);
-    	System.out.println("MyBuild build...");
-    	System.out.println(path);
-    	System.out.println(buildPath);
-    	System.out.println(svnPath);
-        
-        Build build = new Build(path, buildPath, targetPath,number,svnPath,startRevision,ignoreds,jars,null);
-        System.out.println("build.getIgnored() :"+build.getIgnored());
-//        String num = SvnUtils.getLastChangedRev(svnPath+path+"/"+buildPath);
-        SvnUtils.getDiff(svnPath+path+"/"+buildPath, startRevision);
+    	System.out.println("------------------------------------------------------------------------");
+    	System.out.println("MyBuild build start");
+    	System.out.println("------------------------------------------------------------------------");
+    	/*
+    	 * 获取项目名
+    	 */
+    	path = path.replace(File.separator+buildPath, "");
+    	path = path.substring(path.lastIndexOf(File.separator)+1);
+    	Build build = new Build.BuildBuilder().path(path).buildPath(buildPath).targetPath(targetPath).projectName(projectName).number(number)
+    					.svnPath(svnPath).startRevision(startRevision).targzName(targzName).ignoreds(ignoreds).jars(jars).createBuild();
+    	System.out.println("------------------------------------------------------------------------");
+    	System.out.println(build);
+    	System.out.println("------------------------------------------------------------------------");
+    	BuildUtils.building(build);
     }
 
 }
