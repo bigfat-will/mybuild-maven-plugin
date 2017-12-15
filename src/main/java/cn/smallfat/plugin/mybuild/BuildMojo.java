@@ -29,7 +29,7 @@ public class BuildMojo extends AbstractMojo {
 	@Parameter
 	private String startRevision;
 	@Parameter
-	private String targzName;
+	private String packageName;
 	@Parameter
 	private List<String> ignoreds;
 	@Parameter
@@ -46,12 +46,12 @@ public class BuildMojo extends AbstractMojo {
     	System.out.println("MyBuild build start");
     	System.out.println("------------------------------------------------------------------------");
     	/*
-    	 * 获取项目名
+    	 * 获取最外层文件夹名
     	 */
     	path = path.replace(File.separator+buildPath, "");
     	path = path.substring(path.lastIndexOf(File.separator)+1);
     	Build build = new Build.BuildBuilder().path(path).buildPath(buildPath).targetPath(targetPath).projectName(projectName).number(number)
-    					.svnPath(svnPath).startRevision(startRevision).targzName(targzName).ignoreds(ignoreds).jars(jars).createBuild();
+    					.svnPath(svnPath).startRevision(startRevision).packageName(packageName).ignoreds(ignoreds).jars(jars).createBuild();
     	System.out.println("------------------------------------------------------------------------");
     	System.out.println(build);
     	System.out.println("------------------------------------------------------------------------");

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
 import cn.smallfat.plugin.mybuild.Build;
 
@@ -27,11 +28,9 @@ public class BuildUtils {
 
 		try {
 			List<String> list = getDiffFileList(build);
-			File classPathFile = new File(build.getTargetPath() + File.separator
-					+ build.getProjectName());
-			File classPathFileTmp = new File(build.getRealTargetPath());
-			FileUtils.copyDirectory(classPathFile, classPathFileTmp);
-			removeFileExDiff(classPathFileTmp, list);
+			
+			copyFileWithDiff(build, list);
+			
 			String archive = CompressUtils.archive(build.getRealTargetPath());// 生成tar包
 			String path = CompressUtils.compressArchive(archive);// 生成gz包
 			File file = new File(path);
@@ -43,12 +42,39 @@ public class BuildUtils {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
+	public static void copyFileWithDiff(Build build , List<String> diffList) throws IOException{
+		/*
+		 * 遍历 diffList
+		 */
+		for(String diff : diffList){
+			diff = build.getRealProjectPath() + File.separator + diff;
+			int index = diff.lastIndexOf(File.separator);
+			File file = new File(diff.substring(0, index));
+			for(File dFile : file.listFiles()){
+				String fileName = dFile.getName();
+				if(fileName.endsWith(_JAVA_CLASS)){
+					fileName = fileName.replace(_JAVA_CLASS, "");
+					if(fileName.lastIndexOf("$")>0){
+						fileName = fileName.substring(0, fileName.lastIndexOf("$"));
+					}
+				}
+				/*
+				 *如果能 匹配 則 把 文件 copy 
+				 */
+				String name = diff.substring(index + 1);
+				if(name.startsWith(fileName)){
+					String tmpPath = dFile.getAbsolutePath().replace(build.getRealProjectPath(), build.getRealTargetPath());
+					FileUtils.copyFile(dFile, new File(tmpPath));
+				}
+			}
+		}
+	}
+	
 	public static List<String> getDiffFileList(Build build) {
-		List<String> diffs = SvnUtils.getDiff(build.getRealSvnPath(),
-				build.getStartRevision());
+		String startRevision = StringUtils.isEmpty(build.getStartRevision())?SvnUtils.getStartRevision(build.getRealSvnPath()):build.getStartRevision();
+		List<String> diffs = SvnUtils.getDiff(build.getRealSvnPath(),startRevision);
 		List<String> newDiffs = new ArrayList<String>();
 		for (String line : diffs) {
 			/*
@@ -70,12 +96,11 @@ public class BuildUtils {
 					+ JAVA_CLASS);
 			line = line.replace(_JAVA, "");
 
-			newDiffs.add(build.getRealTargetPath() + File.separator + line);
+			newDiffs.add(line);
 		}
 
 		for (String jar : build.getJars()) {
-			newDiffs.add(build.getRealTargetPath() + File.separator + WEB_INF
-					+ File.separator + JAVA_LIB + File.separator + jar);
+			newDiffs.add(WEB_INF + File.separator + JAVA_LIB + File.separator + jar);
 		}
 		System.out.println("------------------------------------------------------------------------");
 		for (String line : newDiffs) {
@@ -84,32 +109,5 @@ public class BuildUtils {
 		System.out.println("MyBuild build ：   处理文件数量   "+ newDiffs.size());
 		System.out.println("------------------------------------------------------------------------");
 		return newDiffs;
-	}
-
-	public static void removeFileExDiff(File classPathFile,
-			List<String> diffList) {
-		File[] files = classPathFile.listFiles();
-		for (File file : files) {
-			if (file.isDirectory()) {
-				removeFileExDiff(file, diffList);
-			} else {
-				String path = file.getAbsolutePath();
-				if (path.endsWith(_JAVA_CLASS)) {
-					path = path.replace(_JAVA_CLASS, "");
-					if (file.getName().contains("$")) {
-						path = path.substring(0, path.lastIndexOf("$"));
-					}
-				}
-				if (!diffList.contains(path)) {
-					file.delete();
-				}
-			}
-		}
-		/*
-		 * 如果为空 则删除
-		 */
-		if (classPathFile.list().length == 0) {
-			classPathFile.delete();
-		}
 	}
 }

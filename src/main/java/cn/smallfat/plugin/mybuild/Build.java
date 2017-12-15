@@ -14,7 +14,7 @@ public class Build {
 	private String number;
 	private String svnPath;
 	private String startRevision;
-	private String targzName;
+	private String packageName;
 	private List<String> ignoreds;
 	private List<String> jars;
 
@@ -23,13 +23,13 @@ public class Build {
 		return "Build [path=" + path + ", buildPath=" + buildPath
 				+ ", targetPath=" + targetPath + ", projectName=" + projectName
 				+ ", number=" + number + ", svnPath=" + svnPath
-				+ ", startRevision=" + startRevision + ", targzName="
-				+ targzName + ", ignoreds=" + ignoreds + ", jars=" + jars + "]";
+				+ ", startRevision=" + startRevision + ", packageName="
+				+ packageName + ", ignoreds=" + ignoreds + ", jars=" + jars + "]";
 	}
 
 	public Build(String path, String buildPath, String targetPath,
 			String projectName, String number, String svnPath,
-			String startRevision, String targzName, List<String> ignoreds,
+			String startRevision, String packageName, List<String> ignoreds,
 			List<String> jars) {
 		super();
 		this.path = path;
@@ -39,7 +39,7 @@ public class Build {
 		this.number = number;
 		this.svnPath = svnPath;
 		this.startRevision = startRevision;
-		this.targzName = targzName;
+		this.packageName = packageName;
 		this.ignoreds = ignoreds;
 		this.jars = jars;
 	}
@@ -80,8 +80,8 @@ public class Build {
 		return projectName;
 	}
 
-	public String getTargzName() {
-		return targzName;
+	public String getPackageName() {
+		return packageName;
 	}
 
 	public static class BuildBuilder {
@@ -92,7 +92,7 @@ public class Build {
 		private String number;
 		private String svnPath;
 		private String startRevision;
-		private String targzName;
+		private String packageName;
 		private List<String> ignoreds;
 		private List<String> jars;
 
@@ -131,8 +131,8 @@ public class Build {
 			return this;
 		}
 
-		public BuildBuilder targzName(String targzName) {
-			this.targzName = targzName;
+		public BuildBuilder packageName(String packageName) {
+			this.packageName = packageName;
 			return this;
 		}
 
@@ -148,13 +148,13 @@ public class Build {
 
 		public Build createBuild() {
 			return new Build(path, buildPath, targetPath, projectName, number,
-					svnPath, startRevision, targzName, ignoreds, jars);
+					svnPath, startRevision, packageName, ignoreds, jars);
 		}
 	}
 
 	public String getRealTragzName() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(targzName).append("_")
+		sb.append(packageName).append("_")
 				.append(DateUtils.format(new Date(), "yyyyMMdd")).append("_")
 				.append(number).append(".tar.gz");
 		return sb.toString();
@@ -163,10 +163,16 @@ public class Build {
 	public String getRealTargetPath() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(targetPath).append(File.separator).append("tmp")
-				.append(File.separator).append(targzName);
+				.append(File.separator).append(packageName);
 		return sb.toString();
 	}
 
+	public String getRealProjectPath() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(targetPath).append(File.separator).append(projectName);
+		return sb.toString();
+	}
+	
 	public String getRealIgnored() {
 		StringBuffer sb = new StringBuffer();
 		for (String ignored : this.ignoreds) {
