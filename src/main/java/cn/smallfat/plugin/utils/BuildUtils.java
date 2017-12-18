@@ -53,6 +53,9 @@ public class BuildUtils {
 			int index = diff.lastIndexOf(File.separator);
 			File file = new File(diff.substring(0, index));
 			for(File dFile : file.listFiles()){
+				if(dFile.isDirectory()){
+					continue;
+				}
 				String fileName = dFile.getName();
 				if(fileName.endsWith(_JAVA_CLASS)){
 					fileName = fileName.replace(_JAVA_CLASS, "");
@@ -66,6 +69,8 @@ public class BuildUtils {
 				String name = diff.substring(index + 1);
 				if(name.startsWith(fileName)){
 					String tmpPath = dFile.getAbsolutePath().replace(build.getRealProjectPath(), build.getRealTargetPath());
+					System.out.println("dFile   : "+dFile);
+					System.out.println("tmpPath : "+tmpPath);
 					FileUtils.copyFile(dFile, new File(tmpPath));
 				}
 			}
