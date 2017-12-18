@@ -4,7 +4,13 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-
+/**
+ * 
+* @author will
+* @email wuxiao@smallfat.cn
+* @version 1.0
+* 2017年12月18日 下午11:07:49
+ */
 public class SvnUtils {
 	private static final String SVN_DIFF = "svn diff ";
 	private static final String SVN_LOG  = "svn log ";

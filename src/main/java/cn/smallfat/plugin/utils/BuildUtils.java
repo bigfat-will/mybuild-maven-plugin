@@ -8,9 +8,20 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugin.logging.SystemStreamLog;
+import org.tigris.subversion.javahl.ClientException;
+import org.tigris.subversion.javahl.Info;
+import org.tigris.subversion.javahl.LogMessage;
 
 import cn.smallfat.plugin.mybuild.Build;
-
+/**
+ * 
+* @author will
+* @email wuxiao@smallfat.cn
+* @version 1.0
+* 2017年12月18日 下午11:07:59
+ */
 public class BuildUtils {
 	private static final String SRC = "src";
 	private static final String MAIN = "main";
@@ -23,8 +34,9 @@ public class BuildUtils {
 	private static final String JAVA_LIB = "lib";
 	private static final String RESOURCES = "resources";
 	
-
-	public static void building(Build build) {
+	private static Log log = new SystemStreamLog();
+	
+	public static void building(Build build) throws ClientException {
 
 		try {
 			List<String> list = getDiffFileList(build);
@@ -36,9 +48,9 @@ public class BuildUtils {
 			File file = new File(path);
 			path = path.replace(file.getName(), build.getRealTragzName());
 			file.renameTo(new File(path));
-			System.out.println("------------------------------------------------------------------------");
-			System.out.println("MyBuild build ：   "+ path);
-			System.out.println("------------------------------------------------------------------------");
+			log.info("------------------------------------------------------------------------");
+			log.info("MyBuild build ：   "+ path);
+			log.info("------------------------------------------------------------------------");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -69,17 +81,16 @@ public class BuildUtils {
 				String name = diff.substring(index + 1);
 				if(name.startsWith(fileName)){
 					String tmpPath = dFile.getAbsolutePath().replace(build.getRealProjectPath(), build.getRealTargetPath());
-					System.out.println("dFile   : "+dFile);
-					System.out.println("tmpPath : "+tmpPath);
+					log.info("dFile   : "+dFile);
+					log.info("tmpPath : "+tmpPath);
 					FileUtils.copyFile(dFile, new File(tmpPath));
 				}
 			}
 		}
 	}
 	
-	public static List<String> getDiffFileList(Build build) {
-		String startRevision = StringUtils.isEmpty(build.getStartRevision())?SvnUtils.getStartRevision(build.getRealSvnPath()):build.getStartRevision();
-		List<String> diffs = SvnUtils.getDiff(build.getRealSvnPath(),startRevision);
+	public static List<String> getDiffFileList(Build build) throws ClientException {
+		List<String> diffs = diff(build);
 		List<String> newDiffs = new ArrayList<String>();
 		for (String line : diffs) {
 			/*
@@ -89,8 +100,8 @@ public class BuildUtils {
 				continue;
 			}
 			line = line.replace("\\", "/").replace("/", File.separator);
-			StringBuffer sb = new StringBuffer(build.getBuildPath());
-			sb.append(File.separator).append(SRC).append(File.separator)
+			StringBuffer sb = new StringBuffer();
+			sb.append(SRC).append(File.separator)
 					.append(MAIN).append(File.separator);
 			int index = line.indexOf(sb.toString());
 			line = line.substring(index);
@@ -107,12 +118,27 @@ public class BuildUtils {
 		for (String jar : build.getJars()) {
 			newDiffs.add(WEB_INF + File.separator + JAVA_LIB + File.separator + jar);
 		}
-		System.out.println("------------------------------------------------------------------------");
+		log.info("------------------------------------------------------------------------");
 		for (String line : newDiffs) {
-			System.out.println("MyBuild build ：   "+ line);
+			log.info("MyBuild build ：   "+ line);
 		}
-		System.out.println("MyBuild build ：   处理文件数量   "+ newDiffs.size());
-		System.out.println("------------------------------------------------------------------------");
+		log.info("MyBuild build ：   处理文件数量   "+ newDiffs.size());
+		log.info("------------------------------------------------------------------------");
 		return newDiffs;
+	}
+	
+	public static List<String> diff(Build build) throws ClientException{
+		SVNClientUtils.buildSvnClient(build.getAccountName(), build.getPassword());
+		String svnUrl = build.getSvnPath();
+		if(StringUtils.isEmpty(svnUrl)){
+			Info info = SVNClientUtils.info(build.getPath());
+			svnUrl = info.getUrl();
+		}
+		Long startRevision = build.getStartRevision();
+		if(startRevision == null){
+			LogMessage logMessage = SVNClientUtils.log(svnUrl);
+			startRevision = logMessage.getRevisionNumber();
+		}
+		 return SVNClientUtils.diff(svnUrl,startRevision);
 	}
 }

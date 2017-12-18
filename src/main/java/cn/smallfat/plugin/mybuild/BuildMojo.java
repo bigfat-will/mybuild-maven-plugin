@@ -1,6 +1,5 @@
 package cn.smallfat.plugin.mybuild;
 
-import java.io.File;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -10,7 +9,13 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import cn.smallfat.plugin.utils.BuildUtils;
-
+/**
+ * 
+* @author will
+* @email wuxiao@smallfat.cn
+* @version 1.0
+* 2017年12月18日 下午11:08:04
+ */
 @Mojo(name = "build")
 public class BuildMojo extends AbstractMojo {
 	
@@ -23,18 +28,21 @@ public class BuildMojo extends AbstractMojo {
 	@Parameter
 	private String projectName;
 	@Parameter
+	private String accountName;
+	@Parameter
+	private String password;
+	@Parameter
 	private String svnPath;
 	@Parameter(defaultValue="01")
 	private String number;
 	@Parameter
-	private String startRevision;
+	private Long startRevision;
 	@Parameter
 	private String packageName;
 	@Parameter
 	private List<String> ignoreds;
 	@Parameter
 	private List<String> jars;
-	
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
        /*
@@ -42,20 +50,23 @@ public class BuildMojo extends AbstractMojo {
         */
     	if(path.lastIndexOf(buildPath)<0)
     		return;
-    	System.out.println("------------------------------------------------------------------------");
-    	System.out.println("MyBuild build start");
-    	System.out.println("------------------------------------------------------------------------");
-    	/*
-    	 * 获取最外层文件夹名
-    	 */
-    	path = path.replace(File.separator+buildPath, "");
-    	path = path.substring(path.lastIndexOf(File.separator)+1);
+    	
+    	getLog().info("------------------------------------------------------------------------");
+    	getLog().info("MyBuild build start");
+    	getLog().info("------------------------------------------------------------------------");
+
     	Build build = new Build.BuildBuilder().path(path).buildPath(buildPath).targetPath(targetPath).projectName(projectName).number(number)
-    					.svnPath(svnPath).startRevision(startRevision).packageName(packageName).ignoreds(ignoreds).jars(jars).createBuild();
-    	System.out.println("------------------------------------------------------------------------");
-    	System.out.println(build);
-    	System.out.println("------------------------------------------------------------------------");
-    	BuildUtils.building(build);
+    					.accountName(accountName).password(password).svnPath(svnPath).startRevision(startRevision).packageName(packageName)
+    					.ignoreds(ignoreds).jars(jars).createBuild();
+    	getLog().info("------------------------------------------------------------------------");
+    	getLog().info(build.toString());
+    	getLog().info("------------------------------------------------------------------------");
+    	try {
+			BuildUtils.building(build);
+		} catch (Exception e) {
+			getLog().error(e);
+			new MojoExecutionException("MyBuild build start: 出错！", e);
+		}
     }
 
 }

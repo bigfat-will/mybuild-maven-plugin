@@ -5,8 +5,6 @@ my  mybuild-maven-plugin
 在 pom.xml 中 添加一下内容
 
 ---
-	<build>
-		<plugins>
 			<!-- My Build -->
 			<plugin>
 				<groupId>cn.smallfat.plugin</groupId>
@@ -21,12 +19,14 @@ my  mybuild-maven-plugin
 					<projectName>${project.build.finalName}</projectName>
 					<packageName>${project.parent.artifactId}</packageName>
 
+					<!-- 以下配置如果不指定，则默认下读取本机SVN配置--> 
+					<!-- <accountName>*</accountName> -->
+					<!-- <password>*</password> -->
+					<!-- <svnPath>*</svnPath> -->
+					<!-- <startRevision>3</startRevision>  -->
+					
 					<!-- 用户配置配置 -->
-					<!--打包的项目 -->
-					<buildPath>**-web</buildPath>
-					<svnPath>svn地址</svnPath>
-					<!-- 不指定时，系统自动获取当前分支最早版本 -->
-					<!-- <startRevision>3</startRevision> -->
+					<buildPath>*-web</buildPath>
 					<number>01</number>
 					<ignoreds>
 						<ignored>.*/resources/application.*</ignored>
@@ -34,6 +34,7 @@ my  mybuild-maven-plugin
 					</ignoreds>
 					<jars>
 						<jar>*.jar</jar>
+						<jar>easyloan-service-0.0.1-SNAPSHOT.jar</jar>
 					</jars>
 				</configuration>
 			</plugin>
