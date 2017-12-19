@@ -104,6 +104,10 @@ public class BuildUtils {
 			sb.append(SRC).append(File.separator)
 					.append(MAIN).append(File.separator);
 			int index = line.indexOf(sb.toString());
+			if(index < 0){
+				log.info("line : "+line);
+				continue;
+			}
 			line = line.substring(index);
 			line = line.replace(sb.toString() + WEBAPP + File.separator, "");
 			line = line.replace(sb.toString() + JAVA, WEB_INF + File.separator

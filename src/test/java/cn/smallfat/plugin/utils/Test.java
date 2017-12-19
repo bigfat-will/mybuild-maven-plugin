@@ -23,7 +23,7 @@ public class Test {
 		SVNClientImpl svn = SVNClientImpl.newInstance();
 		/*svn.username("wuxiao");
 		svn.password("wuxiao");*/
-		Info info = svn.info("G:\\eclipse\\workspace_plugs\\easyloan_r.1.0.0");
+		Info info = svn.info("D:\\workspace_bx_test\\bxloan-r1.5\\bxloan-web");
 		System.out.println(info.getUrl());
 //		LogMessage[] log = svn.logMessages(path, Revision.START, Revision.HEAD,true);
 //		
